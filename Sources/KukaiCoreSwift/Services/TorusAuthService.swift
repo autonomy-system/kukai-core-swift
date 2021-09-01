@@ -177,8 +177,6 @@ public class TorusAuthService {
 		} else {
 			//torus = TorusSwiftDirectSDK(aggregateVerifierType: .singleLogin, aggregateVerifierName: verifierTuple.verifierName, subVerifierDetails: [verifierTuple.verifier], network: self.ethereumNetworkType, loglevel: .none)
 			torus = TorusSwiftDirectSDK(aggregateVerifierType: .singleLogin, aggregateVerifierName: verifierTuple.verifierName, subVerifierDetails: [verifierTuple.verifier], network: self.ethereumNetworkType)
-			
-			let test = TDSDKFactory()
 		}
 		
 		torus.triggerLogin(controller: displayOver).done { data in
