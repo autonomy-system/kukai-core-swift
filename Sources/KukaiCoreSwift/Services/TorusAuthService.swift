@@ -126,19 +126,19 @@ public class TorusAuthService {
 				redirectURL: nativeRedirectURL,
 				jwtParams: ["domain": "torus-test.auth0.com"]
 			)),
-			.google: (verifierName: "google-lrc", SubVerifierDetails(
+			.google: (verifierName: "simon-test-google-testnet", SubVerifierDetails(
 				loginType: .web,
 				loginProvider: .google,
-				clientId: "221898609709-obfn3p63741l5333093430j3qeiinaa8.apps.googleusercontent.com",
-				verifierName: "google-lrc",
+				clientId: "155906220182-hofed664r9gmsjhv9jagmf849o8veb7t.apps.googleusercontent.com",
+				verifierName: "simon-test-google-testnet",
 				redirectURL: googleRedirectURL,
 				browserRedirectURL: browserRedirectURL
 			)),
-			.reddit: (verifierName: "reddit-shubs", SubVerifierDetails(
+			.reddit: (verifierName: "simon-test-reddit-testnet", SubVerifierDetails(
 				loginType: .web,
 				loginProvider: .reddit,
-				clientId: "rXIp6g2y3h1wqg",
-				verifierName: "reddit-shubs",
+				clientId: "bQzwLpriV6wXmZf4F3-XEg",
+				verifierName: "simon-test-reddit-testnet",
 				redirectURL: nativeRedirectURL
 			)),
 			.facebook: (verifierName: "facebook-shubs", SubVerifierDetails(

@@ -25,7 +25,10 @@
 			<string>com.ios-example.test</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>com.googleusercontent.apps.238941746713-vfap8uumijal4ump28p9jd3lbe6onqt4</string>
+				<string>tdsdk-swift</string>
 				<string>tdsdk</string>
+				<string>com.torus.TorusDirectSDKDemo</string>
 			</array>
 		</dict>
 	</array>
