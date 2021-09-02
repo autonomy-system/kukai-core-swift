@@ -14,7 +14,7 @@ import BestLogger
 
 
 public class MockTorusSwiftDirectSDK: TorusSwiftDirectSDK {
-	
+/*
 	override open func triggerLogin(controller: UIViewController? = nil, browserType: URLOpenerTypes = .sfsafari, modalPresentationStyle: UIModalPresentationStyle = .fullScreen) -> Promise<[String : Any]> {
 		guard let verifierType = self.subVerifierDetails.first?.loginProvider else {
 			fatalError("can't find verifier")
@@ -67,9 +67,9 @@ public class MockTorusSwiftDirectSDK: TorusSwiftDirectSDK {
 		}
 		
 		return tempPromise
-	}
+	}*/
 }
-
+/*
 class MockFetchNodeDetails: FetchNodeDetails {
 	
 	override func getNodeDetails() -> NodeDetails {
@@ -90,3 +90,4 @@ class MockTorusUtils: TorusUtils {
 		return tempPromise
 	}
 }
+*/

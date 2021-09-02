@@ -78,7 +78,7 @@ public class TorusAuthService {
 	private let fetchNodeDetails: FetchNodeDetails
 	
 	/// Stored copy of the Torus NodeDetails object. The fetching of this is forced onto the main thread, blocking the UI. Need to push it onto a background thread and store it for other code to access
-	private var nodeDetails: NodeDetails? = nil
+	private var nodeDetails: AllNodeDetails? = nil
 	
 	
 	
@@ -175,7 +175,8 @@ public class TorusAuthService {
 		if let mockTorus = mockedTorus {
 			torus = mockTorus
 		} else {
-			torus = TorusSwiftDirectSDK(aggregateVerifierType: .singleLogin, aggregateVerifierName: verifierTuple.verifierName, subVerifierDetails: [verifierTuple.verifier], network: self.ethereumNetworkType, loglevel: .none)
+			//torus = TorusSwiftDirectSDK(aggregateVerifierType: .singleLogin, aggregateVerifierName: verifierTuple.verifierName, subVerifierDetails: [verifierTuple.verifier], network: self.ethereumNetworkType, loglevel: .none)
+			torus = TorusSwiftDirectSDK(aggregateVerifierType: .singleLogin, aggregateVerifierName: verifierTuple.verifierName, subVerifierDetails: [verifierTuple.verifier], network: self.ethereumNetworkType)
 		}
 		
 		torus.triggerLogin(controller: displayOver).done { data in
@@ -250,7 +251,10 @@ public class TorusAuthService {
 			return
 		}
 		
-		self.getNodeDetailsOnBackgroundThread { [weak self] in
+		// TODO: no need to fetch node details everytime
+		self.fetchNodeDetails.getAllNodeDetails().done { [weak self] allNodeDetails in
+			self?.nodeDetails = allNodeDetails
+			
 			guard let nd = self?.nodeDetails else {
 				completion(Result.failure(ErrorResponse.internalApplicationError(error: TorusAuthError.invalidNodeDetails)))
 				return
@@ -269,11 +273,15 @@ public class TorusAuthService {
 			} else {
 				self?.getPublicAddress(nodeDetails: nd, verifierName: verifierTuple.verifierName, socialUserId: socialUsername, completion: completion)
 			}
+		}.catch { error in
+			os_log("Error logging in: %@", log: .torus, type: .error, "\(error)")
+			completion(Result.failure(ErrorResponse.internalApplicationError(error: error)))
+			return
 		}
 	}
 	
 	/// Private wrapper to avoid duplication in the previous function
-	private func getPublicAddress(nodeDetails: NodeDetails, verifierName: String, socialUserId: String, completion: @escaping ((Result<String, ErrorResponse>) -> Void)) {
+	private func getPublicAddress(nodeDetails: AllNodeDetails, verifierName: String, socialUserId: String, completion: @escaping ((Result<String, ErrorResponse>) -> Void)) {
 		self.torusUtils.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifierName, verifierId: socialUserId, isExtended: true).done { [weak self] data in
 			guard let pubX = data["pub_key_X"],
 				  let pubY = data["pub_key_Y"],
@@ -319,17 +327,6 @@ public class TorusAuthService {
 			os_log("Error fetching address: %@", log: .torus, type: .error, "\(error)")
 			completion(Result.failure(ErrorResponse.internalApplicationError(error: error)))
 			return
-		}
-	}
-	
-	/// Torus SDK runs this logic on the main thread by default, blocking the UI thread freezing animations. Need to push it onto a background thread.
-	private func getNodeDetailsOnBackgroundThread(completion: @escaping (() -> Void)) {
-		DispatchQueue.global(qos: .background).async { [weak self] in
-			self?.nodeDetails = self?.fetchNodeDetails.getNodeDetails()
-			
-			DispatchQueue.main.async {
-				completion()
-			}
 		}
 	}
 	
