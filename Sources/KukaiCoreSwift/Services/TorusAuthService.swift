@@ -94,22 +94,13 @@ public class TorusAuthService {
 	- parameter googleRedirectURL: Google works differently and requires that you redirect to a google cloud app, which in turn will redirect to the native app. If using Google auth you must supply a valid URL or else it won't function
 	- parameter browserRedirectURL: Some services can't return to the native app directly, but instead must go to an intermediary webpage that in turn redirects. This page must be created by you and the URL passed in here
 	*/
-	public init(networkType: TezosNodeClientConfig.NetworkType, networkService: NetworkService, nativeRedirectURL: String, googleRedirectURL: String, browserRedirectURL: String,
-				utils: TorusUtils = TorusUtils(), 			// TODO: workaround as Torus SDK's have no ability to mock anything, or pass anything in
-				fetchNodeDetails: FetchNodeDetails? = nil) 	// TODO: workaround as Torus SDK's have no ability to mock anything, or pass anything in
+	public init(networkType: TezosNodeClientConfig.NetworkType, networkService: NetworkService, nativeRedirectURL: String, googleRedirectURL: String, browserRedirectURL: String)
 	{
 		self.networkType = networkType
 		self.networkSerice = networkService
 		self.ethereumNetworkType = (networkType == .testnet ? .ROPSTEN : .MAINNET)
-		self.torusUtils = utils
-		
-		// TODO: remove when Torus SDK fixed
-		if let fetch = fetchNodeDetails {
-			self.fetchNodeDetails = fetch
-		} else {
-			self.fetchNodeDetails = FetchNodeDetails(proxyAddress: (networkType == .testnet ? testnetProxyAddress : mainnetProxyAddress), network: ethereumNetworkType)
-		}
-		
+		self.torusUtils = TorusUtils(session: networkService.urlSession)
+		self.fetchNodeDetails = FetchNodeDetails(proxyAddress: (networkType == .testnet ? testnetProxyAddress : mainnetProxyAddress), network: ethereumNetworkType, sessionConfig: networkService.urlSession.configuration)
 		
 		testnetVerifiers = [
 			.apple: SubVerifierDetails(
@@ -118,7 +109,8 @@ public class TorusAuthService {
 				clientId: "m1Q0gvDfOyZsJCZ3cucSQEe9XMvl9d9L",
 				verifierName: "torus-auth0-apple-lrc",
 				redirectURL: nativeRedirectURL,
-				jwtParams: ["domain": "torus-test.auth0.com"]
+				jwtParams: ["domain": "torus-test.auth0.com"],
+				session: networkService.urlSession
 			),
 			.twitter: SubVerifierDetails(
 				loginType: .web,
@@ -126,7 +118,8 @@ public class TorusAuthService {
 				clientId: "A7H8kkcmyFRlusJQ9dZiqBLraG2yWIsO",
 				verifierName: "torus-auth0-twitter-lrc",
 				redirectURL: nativeRedirectURL,
-				jwtParams: ["domain": "torus-test.auth0.com"]
+				jwtParams: ["domain": "torus-test.auth0.com"],
+				session: networkService.urlSession
 			),
 			.google: SubVerifierDetails(
 				loginType: .web,
@@ -134,14 +127,16 @@ public class TorusAuthService {
 				clientId: "221898609709-obfn3p63741l5333093430j3qeiinaa8.apps.googleusercontent.com",
 				verifierName: "google-lrc",
 				redirectURL: googleRedirectURL,
-				browserRedirectURL: browserRedirectURL
+				browserRedirectURL: browserRedirectURL,
+				session: networkService.urlSession
 			),
 			.reddit: SubVerifierDetails(
 				loginType: .web,
 				loginProvider: .reddit,
 				clientId: "rXIp6g2y3h1wqg",
 				verifierName: "reddit-shubs",
-				redirectURL: nativeRedirectURL
+				redirectURL: nativeRedirectURL,
+				session: networkService.urlSession
 			),
 			.facebook: SubVerifierDetails(
 				loginType: .web,
@@ -149,7 +144,8 @@ public class TorusAuthService {
 				clientId: "659561074900150",
 				verifierName: "facebook-shubs",
 				redirectURL: nativeRedirectURL,
-				browserRedirectURL: browserRedirectURL
+				browserRedirectURL: browserRedirectURL,
+				session: networkService.urlSession
 			)
 		]
 		
@@ -167,19 +163,13 @@ public class TorusAuthService {
 	- parameter displayOver: The `UIViewController` that the webpage will display on top of
 	- parameter completion: The callback returned when all the networking and cryptography is complete
 	*/
-	public func createWallet(from authType: TorusAuthProvider, displayOver: UIViewController?, mockedTorus: TorusSwiftDirectSDK? = nil, completion: @escaping ((Result<TorusWallet, ErrorResponse>) -> Void)) {
+	public func createWallet(from authType: TorusAuthProvider, displayOver: UIViewController?, completion: @escaping ((Result<TorusWallet, ErrorResponse>) -> Void)) {
 		guard let verifier = self.networkType == .testnet ? testnetVerifiers[authType] : mainnetVerifiers[authType] else {
 			completion(Result.failure(ErrorResponse.internalApplicationError(error: TorusAuthError.missingVerifier)))
 			return
 		}
 		
-		// TODO: remove when Torus SDK fixed
-		if let mockTorus = mockedTorus {
-			torus = mockTorus
-		} else {
-			torus = TorusSwiftDirectSDK(aggregateVerifierType: .singleLogin, aggregateVerifierName: verifier.subVerifierId, subVerifierDetails: [verifier], factory: TDSDKFactory(), network: self.ethereumNetworkType, loglevel: .debug)
-		}
-		
+		torus = TorusSwiftDirectSDK(aggregateVerifierType: .singleLogin, aggregateVerifierName: verifier.subVerifierId, subVerifierDetails: [verifier], factory: TDSDKFactory(), network: self.ethereumNetworkType, loglevel: .debug)
 		torus.triggerLogin(controller: displayOver).done { data in
 			os_log("Torus returned succesful data", log: .torus, type: .debug)
 			
