@@ -74,7 +74,7 @@ public struct WalletUtils {
 	- Parameter mnemonic: A String containing a user supplied mnemonic
 	- Returns: Bool
 	*/
-	public static func isMnemonicValid(mnemonic: String) -> Bool {
-		return WalletCore.HDWallet.isValid(mnemonic: mnemonic)
-	}
+//	public static func isMnemonicValid(mnemonic: String) -> Bool {
+//		return WalletCore.HDWallet.isValid(mnemonic: mnemonic)
+//	}
 }

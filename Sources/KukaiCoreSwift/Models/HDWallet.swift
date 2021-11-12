@@ -93,7 +93,7 @@ public class HDWallet: Wallet {
 	- Parameter derivationPath: Optional: use a different derivation path to the default `HDWallet.defaultDerivationPath`
 	*/
 	public static func create(withMnemonic mnemonic: String, passphrase: String, derivationPath: String = HDWallet.defaultDerivationPath) -> HDWallet? {
-		let internalTrustWallet = WalletCore.HDWallet(mnemonic: mnemonic, passphrase: passphrase)
+        guard let internalTrustWallet = WalletCore.HDWallet(mnemonic: mnemonic, passphrase: passphrase) else { return nil }
 		
 		return HDWallet(withInternalTrustWallet: internalTrustWallet, derivationPath: derivationPath)
 	}
@@ -105,7 +105,7 @@ public class HDWallet: Wallet {
 	- Parameter derivationPath: Optional: use a different derivation path to the default `HDWallet.defaultDerivationPath`
 	*/
 	public static func create(withMnemonicLength length: MnemonicPhraseLength, passphrase: String, derivationPath: String = HDWallet.defaultDerivationPath) -> HDWallet? {
-		let internalTrustWallet = WalletCore.HDWallet(strength: Int32(length.rawValue), passphrase: passphrase)
+        guard let internalTrustWallet = WalletCore.HDWallet(strength: Int32(length.rawValue), passphrase: passphrase) else { return nil }
 		
 		return HDWallet(withInternalTrustWallet: internalTrustWallet, derivationPath: derivationPath)
 	}

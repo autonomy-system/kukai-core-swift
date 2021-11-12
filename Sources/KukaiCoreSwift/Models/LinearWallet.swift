@@ -78,7 +78,7 @@ public class LinearWallet: Wallet {
 			fatalError("can't proceed")
 		}
 		
-		self.internalTrustWallet = WalletCore.HDWallet(strength: Int32(MnemonicPhraseLength.twelve.rawValue), passphrase: "")
+        self.internalTrustWallet = WalletCore.HDWallet(strength: Int32(MnemonicPhraseLength.twelve.rawValue), passphrase: "")!
 		self.seed = ""
 		self.privateKey = secretKey
 		self.publicKey = publicKey
@@ -102,7 +102,7 @@ public class LinearWallet: Wallet {
 	- Parameter ellipticalCurve: Optional: Choose the `EllipticalCurve` used to generate the wallet address
 	*/
 	public static func create(withMnemonic mnemonic: String, passphrase: String, ellipticalCurve: EllipticalCurve = .ed25519) -> LinearWallet? {
-		let internalTrustWallet = WalletCore.HDWallet(mnemonic: mnemonic, passphrase: passphrase)
+        guard let internalTrustWallet = WalletCore.HDWallet(mnemonic: mnemonic, passphrase: passphrase) else { return nil }
 		
 		return LinearWallet(withInternalTrustWallet: internalTrustWallet, ellipticalCurve: ellipticalCurve)
 	}
@@ -114,7 +114,7 @@ public class LinearWallet: Wallet {
 	- Parameter ellipticalCurve: Optional: Choose the `EllipticalCurve` used to generate the wallet address
 	*/
 	public static func create(withMnemonicLength length: MnemonicPhraseLength, passphrase: String, ellipticalCurve: EllipticalCurve = .ed25519) -> LinearWallet?  {
-		let internalTrustWallet = WalletCore.HDWallet(strength: Int32(length.rawValue), passphrase: passphrase)
+        guard let internalTrustWallet = WalletCore.HDWallet(strength: Int32(length.rawValue), passphrase: passphrase) else { return nil }
 		
 		return LinearWallet(withInternalTrustWallet: internalTrustWallet, ellipticalCurve: ellipticalCurve)
 	}
