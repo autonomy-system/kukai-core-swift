@@ -17,7 +17,8 @@ public enum MichelsonConstant: String, CodingKey {
 	case bytes
 	case int
 	case string
-	
+	case integer
+    
 	// prim values
 	case pair = "Pair"
 	case elt = "Elt"
@@ -149,6 +150,15 @@ public class MichelsonPair: AbstractMichelson {
 	
 	
 	// MARK: - Init
+    
+    
+    /// Init accepting any combination of `MichelsonValue` or `MichelsonPair`
+    public init(prim: String, args: [AbstractMichelson]) {
+        self.prim = prim
+        self.args = args
+        
+        super.init()
+    }
 	
 	/// Init accepting any combination of `MichelsonValue` or `MichelsonPair`
 	public init(args: [AbstractMichelson]) {
