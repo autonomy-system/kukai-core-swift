@@ -34,7 +34,7 @@ public class OperationNFTInvocation: Operation {
     - parameter entrypoint: A String containing the name of the entrypoint to call.
     - parameter value: A String containing the JSON Michelson/Micheline needed by the given entrypoint.
     */
-    public init(source: String, amount: TokenAmount = TokenAmount.zeroBalance(decimalPlaces: 0), destinationContract: String, entrypoint: String, value: String?) {
+    public init(source: String, amount: TokenAmount = TokenAmount.zeroBalance(decimalPlaces: 0), destinationContract: String, entrypoint: String, value: MichelsonLiteral?) {
         self.amount = amount.rpcRepresentation
         self.destination = destinationContract
         
@@ -58,7 +58,7 @@ public class OperationNFTInvocation: Operation {
         
         let parametersContainer = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .parameters)
         let entrypoint = try parametersContainer.decode(String.self, forKey: .entrypoint)
-        let value = try parametersContainer.decodeIfPresent(String.self, forKey: .value)
+        let value = try parametersContainer.decodeIfPresent(MichelsonLiteral.self, forKey: .value)
         
         var tempDictionary: [String: Encodable] = [CodingKeys.entrypoint.rawValue: entrypoint]
         if let val = value {
@@ -82,7 +82,7 @@ public class OperationNFTInvocation: Operation {
         var parametersContainer = container.nestedContainer(keyedBy: CodingKeys.self, forKey: .parameters)
         try parametersContainer.encode(parameters[CodingKeys.entrypoint.rawValue] as? String, forKey: .entrypoint)
         
-        if let value = parameters[CodingKeys.value.rawValue] as? String {
+        if let value = parameters[CodingKeys.value.rawValue] as? MichelsonLiteral {
             try parametersContainer.encode(value, forKey: .value)
         }
         
