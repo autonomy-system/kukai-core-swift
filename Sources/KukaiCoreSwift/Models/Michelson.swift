@@ -17,7 +17,7 @@ public enum MichelsonConstant: String, CodingKey {
 	case bytes
 	case int
 	case string
-	
+    
 	// prim values
 	case pair = "Pair"
 	case elt = "Elt"
@@ -149,6 +149,15 @@ public class MichelsonPair: AbstractMichelson {
 	
 	
 	// MARK: - Init
+    
+    
+    /// Init accepting any combination of `MichelsonValue` or `MichelsonPair`
+    public init(prim: String, args: [AbstractMichelson]) {
+        self.prim = prim
+        self.args = args
+        
+        super.init()
+    }
 	
 	/// Init accepting any combination of `MichelsonValue` or `MichelsonPair`
 	public init(args: [AbstractMichelson]) {
@@ -240,4 +249,73 @@ public class MichelsonPair: AbstractMichelson {
 	public static func == (lhs: MichelsonPair, rhs: MichelsonPair) -> Bool {
 		return lhs.prim == rhs.prim && lhs.args == rhs.args
 	}
+}
+
+public class MichelsonLiteral: AbstractMichelson {
+    
+    public let value: String
+    
+    
+    /// Customized `description` to allow object to be logged to console, how it is returned from the RPC
+    public override var description: String {
+        get {
+            return "{\"int\": \"\(value)\"}"
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case int
+    }
+    
+    
+    // MARK: - Init
+        
+    public init(value: String) {
+        self.value = value
+        
+        super.init()
+    }
+    
+    
+    /// Create a `MichelsonPair` from a `Dictionary` of type `[String: Any]`, if possible
+    public class func create(fromDictionary dictionary: [String: Any]?) -> MichelsonLiteral? {
+        guard let dict = dictionary else {
+            os_log("couldn't create MichelsonLiteral, empty dictionary", log: .kukaiCoreSwift, type: .error)
+            return nil
+        }
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: dict, options: .fragmentsAllowed)
+            return try JSONDecoder().decode(MichelsonLiteral.self, from: data)
+            
+        } catch (let error) {
+            os_log("couldn't create MichelsonLiteral - Error: %@", log: .kukaiCoreSwift, type: .error, "\(error)")
+            return nil
+        }
+    }
+    
+    
+    // MARK: - Protocols
+    
+    /// Adhearing to `Decodable`
+    
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        value = try container.decode(String.self, forKey: .int)
+        
+        try super.init(from: decoder)
+    }
+    
+    /// Adhearing to `Encodable`
+    public override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(value, forKey: .int)
+        
+        try super.encode(to: encoder)
+    }
+    
+    /// Adhearing to `Equatable`
+    public static func == (lhs: MichelsonLiteral, rhs: MichelsonLiteral) -> Bool {
+        return lhs.value == rhs.value
+    }
 }
