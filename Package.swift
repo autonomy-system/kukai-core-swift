@@ -12,7 +12,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/attaswift/BigInt.git", from: "5.2.1"),
 		.package(name: "Sodium", url: "https://github.com/jedisct1/swift-sodium.git", from: "0.9.1"),
-		.package(name: "secp256k1", url: "https://github.com/Boilertalk/secp256k1.swift.git", .exact("0.1.4")),
+        .package(name: "secp256k1", url: "https://github.com/Boilertalk/secp256k1.swift.git", from: "0.1.7"),
 		.package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.1.1"),
 		.package(name: "WalletCore", url: "https://github.com/hewigovens/wallet-core-spm", .branch("master")),
     ],
