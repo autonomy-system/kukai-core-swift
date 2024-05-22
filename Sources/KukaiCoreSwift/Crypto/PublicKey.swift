@@ -83,14 +83,16 @@ public struct PublicKey {
 				self.init(bytes: Array(secretKey.bytes[32...]), signingCurve: .ed25519)
 				
 			case .secp256k1:
-				let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN))
+                guard let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN)) else {
+                    return nil
+                }
 				defer {
 					secp256k1_context_destroy(context)
 				}
 				
 				var publicKey = secp256k1_pubkey()
 				guard
-					secp256k1_ec_pubkey_create(context!, &publicKey, secretKey.bytes) != 0
+					secp256k1_ec_pubkey_create(context, &publicKey, secretKey.bytes) != 0
 					else {
 						return nil
 				}
@@ -98,7 +100,7 @@ public struct PublicKey {
 				var outputLength = 33
 				var publicKeyBytes = [UInt8](repeating: 0, count: outputLength)
 				guard secp256k1_ec_pubkey_serialize(
-					context!,
+					context,
 					&publicKeyBytes,
 					&outputLength,
 					&publicKey,
@@ -147,17 +149,19 @@ public struct PublicKey {
 				return Sodium.shared.sign.verify(message: bytesToVerify, publicKey: self.bytes, signature: signature)
 				
 			case .secp256k1:
-				let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_VERIFY))
+                guard let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_VERIFY)) else {
+                    return false
+                }
 				defer {
 					secp256k1_context_destroy(context)
 				}
 				
 				var cSignature = secp256k1_ecdsa_signature()
 				var publicKey = secp256k1_pubkey()
-				secp256k1_ecdsa_signature_parse_compact(context!, &cSignature, signature)
-				_ = secp256k1_ec_pubkey_parse(context!, &publicKey, self.bytes, self.bytes.count)
+				secp256k1_ecdsa_signature_parse_compact(context, &cSignature, signature)
+				_ = secp256k1_ec_pubkey_parse(context, &publicKey, self.bytes, self.bytes.count)
 				
-				return secp256k1_ecdsa_verify(context!, &cSignature, bytesToVerify, &publicKey) == 1
+				return secp256k1_ecdsa_verify(context, &cSignature, bytesToVerify, &publicKey) == 1
 		}
 	}
 	
